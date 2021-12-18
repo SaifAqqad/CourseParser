@@ -5,7 +5,7 @@
 Copy the jar to the `libs` folder then add the dependency in `build.gradle`
 
 ```groovy
-    dependencies {
+dependencies {
     implementation files('libs/CourseParser-0.1-all.jar')
 }
 ```
