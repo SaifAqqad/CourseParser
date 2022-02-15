@@ -5,66 +5,45 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public interface CourseParser {
 
-    record Course(String name,
-                  String description,
-                  String author,
-                  LocalDate publicationDate,
-                  String publisher,
-                  String imageUrl,
-                  String url) {
+    record Course(
+            String name,
+            String description,
+            String author,
+            LocalDate publicationDate,
+            String publisher,
+            String imageUrl,
+            String url
+    ) {
     }
 
-    Pattern urlPattern = Pattern.compile("^(?:https?://)?(?:www\\.)?(?<host>[A-Za-z\\-]+)\\..{2,}/?");
-
-    Course getCourse(URL courseUrl);
-
-    static Course getByURL(String courseUrl) {
-        try {
-            Matcher matcher = urlPattern.matcher(courseUrl);
-            String host = matcher.find() ? matcher.group("host") : "";
-            CourseParser parser = switch (host) {
-                case "packtpub" -> new PacktpubParser();
-                case "udemy" -> new UdemyParser();
-                case "pluralsight" -> new PluralsightParser();
-                default -> throw new NullPointerException();
-            };
-            return parser.getCourse(courseUrl);
-        } catch (NullPointerException e) {
-            return null;
+    class CourseParserException extends RuntimeException {
+        public CourseParserException(String message) {
+            super(message);
         }
     }
 
-    default Course getCourse(String courseUrl) {
-        try {
-            if (!courseUrl.matches("^\\w+?://.*")) {
-                courseUrl = "https://" + courseUrl;
-            }
-            return this.getCourse(new URL(courseUrl));
-        } catch (MalformedURLException e) {
-            return null;
-        }
-    }
+    Pattern urlPattern = Pattern.compile("^(?<protocol>https?://)?(?:www\\.)?(?<host>[A-Za-z\\-]+)\\..{2,}/?");
 
-    default URL validateURL(URL url, String pattern) {
-        String urlString = url.toString();
+    Course getCourse(String courseUrl);
+
+    default String validateURL(String urlString, String pattern) {
         if (!urlString.matches(pattern))
             return null;
-        return url;
+        return urlString;
     }
 
-    default Document getDocument(URL url) {
+    default Document getDocument(String url) {
         try {
-            return Jsoup.connect(url.toString()).get();
+            return Jsoup.connect(url).get();
         } catch (IOException e) {
             return null;
         }
@@ -80,6 +59,27 @@ public interface CourseParser {
             styles.put(style[0], style[1]);
         }
         return styles;
+    }
+
+    default <T> T nonNullOrFail(T obj, String msg) {
+        if (Objects.isNull(obj))
+            throw new CourseParserException(msg);
+        return obj;
+    }
+
+    static Course getByURL(String courseUrl) throws CourseParserException {
+        Matcher matcher = urlPattern.matcher(courseUrl);
+        String host = matcher.find() ? matcher.group("host") : "";
+        if (Objects.isNull(matcher.group("protocol"))) {
+            courseUrl = "https://" + courseUrl;
+        }
+        CourseParser parser = switch (host) {
+            case "packtpub" -> new PacktpubParser();
+            case "udemy" -> new UdemyParser();
+            case "pluralsight" -> new PluralsightParser();
+            default -> throw new CourseParserException(host + " is not supported");
+        };
+        return parser.getCourse(courseUrl);
     }
 
 }

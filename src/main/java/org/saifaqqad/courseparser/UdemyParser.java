@@ -5,8 +5,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -18,7 +17,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UdemyParser implements CourseParser {
-    private static final String VALID_URL_PATTERN =
+    protected static final String VALID_URL_PATTERN =
             "^(?:https?\\://)?(?:www\\.)?udemy\\.com/course/(?<courseName>[a-zA-Z0-9\\-]+)/?.*$";
     private static final String COURSE_TITLE_SELECTOR = "[data-purpose='lead-title']";
     private static final String COURSE_DESC_SELECTOR = "[data-purpose='lead-headline']";
@@ -28,31 +27,24 @@ public class UdemyParser implements CourseParser {
 
 
     @Override
-    public Course getCourse(URL courseUrl) {
-        courseUrl = validateURL(courseUrl, VALID_URL_PATTERN);
-        if (courseUrl == null)
-            return null;
-        try {
-            Document doc = Objects.requireNonNull(this.getDocument(courseUrl));
-            String name = getName(doc);
-            String description = getDescription(doc);
-            LocalDate pubDate = getPublicationDate(doc);
-            String publisher = "Udemy";
-            String author = getAuthor(doc);
-            String imageUrl = getImageUrl(doc);
-            String url = courseUrl.toString();
-            return new Course(
-                    name,
-                    description,
-                    author,
-                    pubDate,
-                    publisher,
-                    imageUrl,
-                    url
-            );
-        } catch (NullPointerException e) {
-            return null;
-        }
+    public Course getCourse(String courseUrl) {
+        courseUrl = nonNullOrFail(validateURL(courseUrl, VALID_URL_PATTERN), "Invalid URL");
+        Document doc = nonNullOrFail(this.getDocument(courseUrl), "Failed to download the document");
+        String name = nonNullOrFail(getName(doc), "Failed to parse course name");
+        String description = getDescription(doc);
+        LocalDate pubDate = getPublicationDate(doc);
+        String publisher = "Udemy";
+        String author = getAuthor(doc);
+        String imageUrl = getImageUrl(doc);
+        return new Course(
+                name,
+                description,
+                author,
+                pubDate,
+                publisher,
+                imageUrl,
+                courseUrl
+        );
     }
 
     private String getImageUrl(Document doc) {
@@ -77,21 +69,23 @@ public class UdemyParser implements CourseParser {
     }
 
     private String getDescription(Document doc) {
-        return Objects.requireNonNullElse(doc.selectFirst(COURSE_DESC_SELECTOR), new Element("span")).text();
+        var element = doc.selectFirst(COURSE_DESC_SELECTOR);
+        return Objects.isNull(element) ? "" : element.text();
     }
 
-    private String getName(Document doc) throws NullPointerException {
-        return Objects.requireNonNull(doc.selectFirst(COURSE_TITLE_SELECTOR)).text();
+    private String getName(Document doc) {
+        var element = doc.selectFirst(COURSE_TITLE_SELECTOR);
+        return Objects.isNull(element) ? null : element.text();
     }
 
     @Override
-    public Document getDocument(URL url) {
+    public Document getDocument(String url) {
         try {
             HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-            HttpRequest request = HttpRequest.newBuilder().uri(url.toURI()).build();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return Jsoup.parse(response.body());
-        } catch (IOException | InterruptedException | URISyntaxException e) {
+        } catch (IOException | InterruptedException e) {
             return null;
         }
     }
