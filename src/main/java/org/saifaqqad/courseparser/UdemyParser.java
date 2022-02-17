@@ -48,7 +48,8 @@ public class UdemyParser implements CourseParser {
     }
 
     private String getImageUrl(Document doc) {
-        return Objects.requireNonNullElse(doc.selectFirst(COURSE_IMAGE_SELECTOR), new Element("img")).attr("src");
+        var element = doc.selectFirst(COURSE_IMAGE_SELECTOR);
+        return Objects.isNull(element) ? null : element.attr("src");
     }
 
     private String getAuthor(Document doc) {
