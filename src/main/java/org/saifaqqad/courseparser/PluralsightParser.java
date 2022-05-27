@@ -50,6 +50,7 @@ public class PluralsightParser implements CourseParser {
             try {
                 return LocalDate.parse(dateString, DateTimeFormatter.ofPattern("MMM d, yyyy"));
             } catch (DateTimeParseException ignored) {
+                return null;
             }
         }
         return null;

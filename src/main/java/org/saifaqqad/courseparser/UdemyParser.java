@@ -65,6 +65,7 @@ public class UdemyParser implements CourseParser {
             String dateStr = Objects.requireNonNull(doc.selectFirst(COURSE_PUBDATE_SELECTOR)).child(1).text().replaceAll("[A-Za-z\\s]", "");
             publicationDate = YearMonth.parse(dateStr, DateTimeFormatter.ofPattern("M/yyyy")).atDay(1);
         } catch (NullPointerException | DateTimeParseException ignored) {
+            // ignored
         }
         return publicationDate;
     }
@@ -86,7 +87,10 @@ public class UdemyParser implements CourseParser {
             HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return Jsoup.parse(response.body());
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return null;
         }
     }

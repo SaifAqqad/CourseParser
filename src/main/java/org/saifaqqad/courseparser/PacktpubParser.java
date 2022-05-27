@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class PacktpubParser implements CourseParser {
@@ -24,19 +25,19 @@ public class PacktpubParser implements CourseParser {
         Document doc = nonNullOrFail(this.getDocument(courseUrl), "Jsoup failed to download the document");
         String name = nonNullOrFail(getName(doc), "Failed to parse course name");
         String description = getDescription(doc);
-        String Author = nonNullOrFail(getAuthor(doc), "Failed to parse author name");
+        String author = nonNullOrFail(getAuthor(doc), "Failed to parse author name");
         String imageUrl = getImageUrl(doc);
         Object[] publicationInfo = getPublicationInfo(doc);
         String publisher = (String) publicationInfo[1];
         LocalDate publicationDate = (LocalDate) publicationInfo[0];
         return new Course(
-                name,
-                description,
-                Author,
-                publicationDate,
-                publisher,
-                imageUrl,
-                courseUrl
+            name,
+            description,
+            author,
+            publicationDate,
+            publisher,
+            imageUrl,
+            courseUrl
         );
     }
 
@@ -45,11 +46,13 @@ public class PacktpubParser implements CourseParser {
         doc.select(COURSE_INFO_SELECTOR).forEach(element -> {
             String name = Objects.requireNonNull(element.selectFirst("dt")).text();
             String value = Objects.requireNonNull(element.selectFirst("dd")).text();
-            if ("".equals(value))
+            if (value.isBlank()) {
                 return;
-            switch (name) {
-                case "Publication date:" -> info[0] = YearMonth.parse(value, DateTimeFormatter.ofPattern("MMMM yyyy")).atDay(1);
-                case "Publisher" -> info[1] = value;
+            }
+            if (name.equals("Release date")) {
+                info[0] = YearMonth.parse(value, DateTimeFormatter.ofPattern("MMMM yyyy")).atDay(1);
+            } else if (name.equals("Publisher")) {
+                info[1] = value;
             }
         });
         return info;
@@ -66,10 +69,10 @@ public class PacktpubParser implements CourseParser {
 
     private String getDescription(Document doc) {
         return doc.select(COURSE_DESC_SELECTOR)
-                .stream()
-                .map(Element::text)
-                .filter(txt -> !"".equals(txt))
-                .collect(Collectors.joining("\n"));
+                  .stream()
+                  .map(Element::text)
+                  .filter(Predicate.not(String::isBlank))
+                  .collect(Collectors.joining("\n"));
     }
 
     private String getName(Document doc) {

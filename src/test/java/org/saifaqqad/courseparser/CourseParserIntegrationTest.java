@@ -11,7 +11,9 @@ public class CourseParserIntegrationTest {
         CourseParser.Course course = CourseParser.getByURL(courseURL);
         assertNotNull(course);
         assertEquals("Learning Python for Data Analysis and Visualization", course.name());
-        assertEquals("Learn python and how to use it to analyze,visualize and present data. Includes tons of sample code and hours of video!", course.description());
+        assertEquals(
+            "Learn python and how to use it to analyze,visualize and present data. Includes tons of sample code and hours of video!",
+            course.description());
         assertEquals("Jose Portilla", course.author());
         assertEquals(courseURL, course.url());
         assertEquals("Udemy", course.publisher());
@@ -24,7 +26,9 @@ public class CourseParserIntegrationTest {
         CourseParser.Course course = CourseParser.getByURL(courseURL);
         assertNotNull(course);
         assertEquals("JavaScript: Getting Started", course.name());
-        assertEquals("JavaScript is the popular programming language which powers web pages and web applications. If you are new to programming or just new to the language, this course will get you started coding in JavaScript.", course.description());
+        assertEquals(
+            "JavaScript is the popular programming language which powers web pages and web applications. If you are new to programming or just new to the language, this course will get you started coding in JavaScript.",
+            course.description());
         assertEquals("Mark Zamoyta", course.author());
         assertEquals(courseURL, course.url());
         assertEquals("Pluralsight", course.publisher());
@@ -37,11 +41,12 @@ public class CourseParserIntegrationTest {
         CourseParser.Course course = CourseParser.getByURL(courseURL);
         assertNotNull(course);
         assertEquals("C# 10 and .NET 6 \u2013 Modern Cross-Platform Development - Sixth Edition", course.name());
-        assertEquals("""
-                This latest edition is extensively revised to accommodate all the latest features that come with C# 10 and .NET 6.
-                You will learn object-oriented programming, writing, testing, and debugging functions, implementing interfaces, and inheriting classes. The book covers the .NET APIs for performing tasks like managing and querying data, monitoring and improving performance, and working with the filesystem, async streams, serialization, and encryption. It provides examples of cross-platform apps you can build and deploy, such as websites and services using ASP.NET Core.
-                The best application for learning the C# language constructs and many of the .NET libraries does not distract with unnecessary application code. Hence, the C# and .NET topics covered in Chapters 1 to 12 feature console applications. In Chapters 13 to 17, having mastered the basics, you will build practical applications and services using ASP.NET Core, the Model-View-Controller (MVC) pattern, and Blazor.
-                There are also two new online chapters on using .NET MAUI to build cross-platform apps and building services using a variety of technologies, including Web API, OData, gRPC, GraphQL, SignalR, and Azure Functions.""", course.description());
+        assertEquals(
+            """
+                Extensively revised to accommodate all the latest features that come with C# 10 and .NET 6, this latest edition of our comprehensive guide will get you coding in C# with confidence.
+                You’ll learn object-oriented programming, writing, testing, and debugging functions, implementing interfaces, and inheriting classes. The book covers the .NET APIs for performing tasks like managing and querying data, monitoring and improving performance, and working with the filesystem, async streams, and serialization. You’ll build and deploy cross-platform apps, such as websites and services using ASP.NET Core.
+                Instead of distracting you with unnecessary application code, the first twelve chapters will teach you about C# language constructs and many of the .NET libraries through simple console applications. In later chapters, having mastered the basics, you’ll then build practical applications and services using ASP.NET Core, the Model-View-Controller (MVC) pattern, and Blazor.""",
+            course.description());
         assertEquals("Mark J. Price", course.author());
         assertEquals(courseURL, course.url());
         assertEquals("Packt", course.publisher());
