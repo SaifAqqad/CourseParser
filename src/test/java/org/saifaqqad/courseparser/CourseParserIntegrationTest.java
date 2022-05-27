@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CourseParserIntegrationTest {
+class CourseParserIntegrationTest {
     @Test
     void udemy() {
         String courseURL = "https://www.udemy.com/course/learning-python-for-data-analysis-and-visualization/";
@@ -50,7 +50,32 @@ public class CourseParserIntegrationTest {
         assertEquals("Mark J. Price", course.author());
         assertEquals(courseURL, course.url());
         assertEquals("Packt", course.publisher());
-        assertEquals("https://static.packt-cdn.com/products/9781801077361/cover/smaller", course.imageUrl().split("\\?")[0]);
+        assertEquals(
+            "https://static.packt-cdn.com/products/9781801077361/cover/smaller",
+            course.imageUrl().split("\\?")[0]);
+    }
+
+    @Test
+    void oreilly() {
+        String courseURL = "https://www.oreilly.com/videos/the-complete-java/9781801075190/";
+        CourseParser.Course course = CourseParser.getByURL(courseURL);
+        assertNotNull(course);
+        assertEquals("The Complete Java Developer Course: From Beginner to Master", course.name());
+        assertEquals(
+            """
+                Learn the tips and tricks to become a proficient Java programmer and master the fundamentals of the language
+                About This Video
+                Master the fundamentals of Java programming, no matter your current level of coding skillsLearn the theory behind the code and put it to practice right awaySolidify your skills as a Java developer by building engaging portfolio projectsIn Detail
+                Be it websites, mobile apps, or desktop software, Java remains one of the most popular programming languages around. With over 7.6 million developers using it worldwide, the surge of new programming languages has not dampened the demand for this 25+-year-old language. With an average Java developer in the US earning over $104,000 a year, Java programming skills are still highly sought after.
+                This course is designed to teach you these skills from scratch, starting with JDK installation followed by the creation of your first program. Then, as you progress through the sections, you’ll start learning the core Java concepts such as control statements, arrays, strings, methods, objects, and more. In each of these sections, you’ll be building a unique, exciting project, thus ensuring you’re not just learning the theory but also practicing what you learned. Average of three, Mad Libs clone, and tic-tac-toe are just some of the projects you’ll be building in this course. To make sure you’ve mastered each line of code, there are practical hands-on coding challenges in every lecture.
+                By the end of this course, you will have mastered the best tips, tricks, and theory behind the Java programming language. The hands-on nature of this course will ensure that you can readily apply your skills to real-world projects.
+                Who this book is for
+                If you are a beginner coder and are new to Java, this course is for you. Experienced Java programmers who want to keep their skills sharp or developers looking to upskill themselves can find great value in this course.""",
+            course.description());
+        assertEquals("Packt Publishing", course.publisher());
+        assertEquals("Codestars by Rob Percival, John P. Baugh", course.author());
+        assertEquals(courseURL, course.url());
+        assertEquals("https://learning.oreilly.com/library/cover/9781801075190/250w/", course.imageUrl());
     }
 
 }

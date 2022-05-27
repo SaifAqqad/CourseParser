@@ -77,6 +77,7 @@ public interface CourseParser {
             case "packtpub" -> new PacktpubParser();
             case "udemy" -> new UdemyParser();
             case "pluralsight" -> new PluralsightParser();
+            case "oreilly" -> new OreillyParser();
             default -> throw new CourseParserException(host + " is not supported");
         };
         return parser.getCourse(courseUrl);
